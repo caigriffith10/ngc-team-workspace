@@ -1,0 +1,53 @@
+NextGen Coders Team Workspace
+
+FIRST TIME
+1. Install Node.js (the LTS version) from https://nodejs.org if you don't have it.
+2. Unzip. Open a terminal INSIDE the folder that contains package.json and run:
+     npm install
+     npm run dev
+3. Open http://localhost:3000 in your browser.
+
+Logins (click User Login):
+  admin        nextgencodersadmin   (Admin)
+  volunteer    ngc-volunteer        (Volunteer)   <- demo, delete before going live
+  officer      ngc-officer          (Officer)     <- demo, delete before going live
+  seniorlead   ngc-seniorlead       (Senior Lead) <- demo, delete before going live
+
+UPDATING (every time you get a new zip)
+- Extract the new zip INTO THE SAME FOLDER, right on top of the old files, and choose "Replace".
+  Your accounts, courses and settings are NOT in the zip, so they are kept.
+- If the site is already running, just refresh the page.
+- If it's not running, run:  npm run dev
+- Only run "npm install" again if you are told a new package was added.
+
+NOTES
+- On your own computer, everything you create is saved in the data folder (data/db.json). Delete that file to start fresh.
+  On Vercel it is saved in the Neon database instead (see PUTTING IT ON VERCEL below).
+- .env.local holds the login secret. It is created automatically the first time you run the site.
+  Do not post or upload it anywhere public.
+- Change the admin password in Settings after you sign in.
+
+OPTIONAL SETTINGS (put these in .env.local, then restart the site)
+- ATTENDANCE_SHEET_URL=   the Google Sheet link for Instructor Attendance (Share > Anyone with the link > Viewer)
+- RESEND_API_KEY=         your Resend key, so "Send Email" in Send Class Email can send
+- RESEND_FROM_EMAIL=      the sender address on a domain you verified in Resend
+
+PUTTING IT ON VERCEL
+Vercel can't save files, so the site uses a free Neon database there. The code switches automatically when DATABASE_URL is set.
+1. Make a free account at neon.tech, create a project, and copy the connection string (starts with postgresql://).
+2. Put the project on GitHub (private repo), then in Vercel: Add New > Project > import the repo.
+   (No GitHub? Install the CLI once with "npm i -g vercel", then run "vercel" in this folder and answer the questions.)
+3. In Vercel, add these Environment Variables BEFORE deploying:
+     DATABASE_URL            the Neon string
+     AUTH_SECRET             any long random string (40+ characters)
+     ADMIN_USERNAME          admin (or your choice)
+     ADMIN_INITIAL_PASSWORD  a NEW strong password, 10+ characters (used once, to create the admin; the site refuses the default)
+     RESEND_API_KEY / RESEND_FROM_EMAIL   optional, for Send Class Email
+     ATTENDANCE_SHEET_URL    optional, the Google Sheet link
+4. Deploy. The first visit creates the admin account in the database. No demo accounts are created there.
+5. EASIEST WAY to bring your local accounts/courses: in Neon Console open SQL Editor, paste the contents of neon-import.sql, click Run.
+   IMPORTANT: set Vercel's AUTH_SECRET to the same value as in your .env.local, or the imported passwords can't be read.
+   (Or, with the command line, in PowerShell in this folder:)
+     $env:DATABASE_URL="your neon string"; npm run import-data
+   Then delete the demo accounts on the Accounts page.
+Limit: Vercel rejects a single save larger than about 4.5 MB, so keep attached files small (a few MB per save).
