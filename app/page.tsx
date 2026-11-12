@@ -49,7 +49,7 @@ export default function Home() {
               <>
                 <div className="card-head">
                   <h1>{APP_NAME}</h1>
-                  <p>Dashboard for NextGen Coderss Volunteers and Instructors</p>
+                  <p>Dashboard for NextGen Coders Volunteers and Instructors</p>
                 </div>
                 <div className="card-body">
                   <button className="btn btn-block btn-green" onClick={() => setView("login")}>
