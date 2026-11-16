@@ -673,7 +673,10 @@ h1, h2, h3 { letter-spacing: -.01em; }
   .dash-main { padding: 1.25rem 1rem 3rem; }
   .bld-bar { padding: .6rem 1rem; }
   .card-head, .card-body { padding-left: 1.25rem; padding-right: 1.25rem; }
-  .main { padding: 1.5rem 1rem; }
+  /* Login: header floats on top so the card centers on the whole screen, not just the space below the header. */
+  .page { min-height: 100vh; min-height: 100dvh; position: relative; }
+  .page .site-header { position: absolute; top: 0; left: 0; right: 0; }
+  .main { padding: 4.5rem 1rem; }
 
   /* Easier to tap, and 16px text stops iPhones zooming in when a field is focused. */
   .input, .rt-select, .rt-area { font-size: 16px; }
