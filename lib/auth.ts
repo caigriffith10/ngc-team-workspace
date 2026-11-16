@@ -1,7 +1,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto"
 
 export const COOKIE_NAME = "ngc_session"
-const SESSION_SECONDS = 60 * 60 * 8 // 8 hours
+export const SESSION_SECONDS = 60 * 60 * 8 // 8 hours
+export const REMEMBER_SECONDS = 60 * 60 * 24 * 90 // "Remember me": stays signed in until Sign out (max 90 days)
 
 function secret(): string {
   const s = process.env.AUTH_SECRET
@@ -11,8 +12,8 @@ function secret(): string {
 
 const sign = (payload: string) => createHmac("sha256", secret()).update(payload).digest("base64url")
 
-export function createSession(accountId: string): string {
-  const payload = Buffer.from(JSON.stringify({ id: accountId, exp: Math.floor(Date.now() / 1000) + SESSION_SECONDS })).toString("base64url")
+export function createSession(accountId: string, seconds = SESSION_SECONDS): string {
+  const payload = Buffer.from(JSON.stringify({ id: accountId, exp: Math.floor(Date.now() / 1000) + seconds })).toString("base64url")
   return `${payload}.${sign(payload)}`
 }
 

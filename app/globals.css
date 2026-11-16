@@ -689,3 +689,6 @@ h1, h2, h3 { letter-spacing: -.01em; }
   .modal { padding: 1.1rem; max-height: 94vh; }
   .modal-actions .btn { flex: 1; }
 }
+
+.remember { display: flex; align-items: center; gap: .6rem; font-size: .95rem; color: var(--text); cursor: pointer; width: fit-content; }
+.remember input { width: 1.15rem; height: 1.15rem; margin: 0; accent-color: var(--green); cursor: pointer; }

@@ -12,6 +12,7 @@ export default function Home() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [remember, setRemember] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -24,7 +25,7 @@ export default function Home() {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, remember }),
       })
       if (res.ok) {
         router.push("/dashboard")
@@ -105,6 +106,10 @@ export default function Home() {
                       </button>
                     </div>
                   </div>
+                  <label className="remember">
+                    <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                    <span>Remember me</span>
+                  </label>
                   {error && <p className="form-error" role="alert">{error}</p>}
                   <button type="submit" className="btn btn-block btn-green" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"}

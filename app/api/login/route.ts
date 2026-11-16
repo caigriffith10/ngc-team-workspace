@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { COOKIE_NAME, createSession } from "@/lib/auth"
+import { COOKIE_NAME, REMEMBER_SECONDS, SESSION_SECONDS, createSession } from "@/lib/auth"
 import { passwordMatches } from "@/lib/crypto"
 import { readDB, writeDB } from "@/lib/db"
 
@@ -15,6 +15,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : ""
   const password = typeof body?.password === "string" ? body.password.slice(0, 200) : ""
+  const remember = body?.remember === true
   const now = Date.now()
 
   const db = await readDB("accounts", "throttle")
@@ -41,8 +42,11 @@ export async function POST(request: Request) {
 
   if (db.throttle[ipKey] || db.throttle[userKey]) { delete db.throttle[ipKey]; delete db.throttle[userKey]; await writeDB(db) }
   const res = NextResponse.json({ ok: true })
-  res.cookies.set(COOKIE_NAME, createSession(account.id), {
-    httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 8,
+  // Remember me: a long-lived cookie that survives closing the browser until Sign out.
+  // Otherwise: a session cookie (gone when the browser closes) that also expires after 8 hours.
+  res.cookies.set(COOKIE_NAME, createSession(account.id, remember ? REMEMBER_SECONDS : SESSION_SECONDS), {
+    httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/",
+    ...(remember ? { maxAge: REMEMBER_SECONDS } : {}),
   })
   return res
 }
