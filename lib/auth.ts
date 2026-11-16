@@ -12,8 +12,8 @@ function secret(): string {
 
 const sign = (payload: string) => createHmac("sha256", secret()).update(payload).digest("base64url")
 
-export function createSession(accountId: string, seconds = SESSION_SECONDS): string {
-  const payload = Buffer.from(JSON.stringify({ id: accountId, exp: Math.floor(Date.now() / 1000) + seconds })).toString("base64url")
+export function createSession(accountId: string, seconds = SESSION_SECONDS, version = 0): string {
+  const payload = Buffer.from(JSON.stringify({ id: accountId, v: version, exp: Math.floor(Date.now() / 1000) + seconds })).toString("base64url")
   return `${payload}.${sign(payload)}`
 }
 
@@ -34,7 +34,10 @@ export function readPayload<T>(token: unknown): T | null {
 }
 
 /** Returns the account id if the token is genuine and unexpired, otherwise null. */
-export function verifySession(token: string | undefined): string | null {
+export const verifySession = (token: string | undefined): string | null => readSession(token)?.id ?? null
+
+/** Like verifySession, but also returns the account's session version the cookie was made with. */
+export function readSession(token: string | undefined): { id: string; v: number } | null {
   if (!token) return null
   const [payload, sig] = token.split(".")
   if (!payload || !sig) return null
@@ -42,9 +45,9 @@ export function verifySession(token: string | undefined): string | null {
   const given = Buffer.from(sig)
   if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null
   try {
-    const { id, exp } = JSON.parse(Buffer.from(payload, "base64url").toString())
+    const { id, exp, v } = JSON.parse(Buffer.from(payload, "base64url").toString())
     if (typeof id !== "string" || typeof exp !== "number" || exp < Date.now() / 1000) return null
-    return id
+    return { id, v: typeof v === "number" ? v : 0 }
   } catch {
     return null
   }

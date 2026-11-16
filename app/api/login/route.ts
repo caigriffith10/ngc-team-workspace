@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   const res = NextResponse.json({ ok: true })
   // Remember me: a long-lived cookie that survives closing the browser until Sign out.
   // Otherwise: a session cookie (gone when the browser closes) that also expires after 8 hours.
-  res.cookies.set(COOKIE_NAME, createSession(account.id, remember ? REMEMBER_SECONDS : SESSION_SECONDS), {
+  res.cookies.set(COOKIE_NAME, createSession(account.id, remember ? REMEMBER_SECONDS : SESSION_SECONDS, account.sv ?? 0), {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/",
     ...(remember ? { maxAge: REMEMBER_SECONDS } : {}),
   })

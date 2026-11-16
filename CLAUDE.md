@@ -51,7 +51,7 @@ Next.js 16 (App Router, `proxy.ts` instead of middleware), React 19, TypeScript 
 - **Hosted seeding:** on a hosted DB the first visit refuses to create the admin if `ADMIN_INITIAL_PASSWORD` is the local default or under 10 characters.
 - **Dependencies:** run `npm audit --omit=dev` now and then; Next was bumped to 16.4.6 for a critical advisory.
 - **Modals:** use `useModal` (`lib/useModal.ts`) + `role="dialog" aria-modal`; it gives Escape, focus trap and focus return.
-- **Known accepted risks:** passwords are reversible (admins can view them; see `lib/crypto.ts`); sessions are stateless 8 h cookies (a password change doesn't end an existing session); uploaded files are type-checked by declared type, not file contents; no under-18 consent or retention policy yet (needs the organization's decision).
+- **Known accepted risks:** passwords are reversible (admins can view them; see `lib/crypto.ts`); sessions are stateless cookies (8 h, or 90 days with Remember me); an admin changing someone's password bumps `Account.sv`, which ends all that account's sessions (`getUser` compares it with the cookie's `v`), but the person changing their OWN password in Settings does not end their other sessions; uploaded files are type-checked by declared type, not file contents; no under-18 consent or retention policy yet (needs the organization's decision).
 - **Privacy:** `docs/PRIVACY-NOTICE-DRAFT.md` is an unpublished draft with `[CONFIRM]` placeholders. Don't publish it until the organization fills them in.
 
 ## Routes

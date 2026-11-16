@@ -1,17 +1,19 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { NextResponse } from "next/server"
-import { COOKIE_NAME, verifySession } from "./auth"
+import { COOKIE_NAME, readSession } from "./auth"
 import { readDB } from "./db"
 import { Account, Permission, PublicAccount, permissionsOf } from "./types"
 
 export const publicAccount = ({ password: _pw, ...rest }: Account): PublicAccount => rest
 
-/** The signed-in account, or null. Re-checks the database so deleted accounts lose access immediately. */
+/** The signed-in account, or null. Re-checks the database so deleted accounts and changed passwords lose access immediately. */
 export async function getUser(): Promise<Account | null> {
-  const id = verifySession((await cookies()).get(COOKIE_NAME)?.value)
-  if (!id) return null
-  return (await readDB("accounts")).accounts.find((a) => a.id === id) ?? null
+  const s = readSession((await cookies()).get(COOKIE_NAME)?.value)
+  if (!s) return null
+  const account = (await readDB("accounts")).accounts.find((a) => a.id === s.id)
+  // A password change by an admin bumps the account's version, which ends every older session.
+  return account && (account.sv ?? 0) === s.v ? account : null
 }
 
 export const fail = (error: string, status = 400) => NextResponse.json({ error }, { status })

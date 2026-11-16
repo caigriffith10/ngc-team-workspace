@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { encryptPassword } from "@/lib/crypto"
+import { decryptPassword, encryptPassword } from "@/lib/crypto"
 import { readDB, writeDB } from "@/lib/db"
 import { fail, guard } from "@/lib/session"
 import { BUILT_IN_ROLES } from "@/lib/types"
@@ -34,6 +34,8 @@ export async function PATCH(request: Request, { params }: Ctx) {
   }
   if (typeof b.password === "string" && b.password !== "") {
     if (b.password.length < 6 || b.password.length > 100) return fail("Password must be 6-100 characters.")
+    // The edit form sends the current password back unchanged, so only a real change signs the person out everywhere.
+    if (b.password !== decryptPassword(acct.password)) acct.sv = (acct.sv ?? 0) + 1
     acct.password = encryptPassword(b.password)
   }
   await writeDB(db)
