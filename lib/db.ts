@@ -39,7 +39,7 @@ function seed(): DB {
   const sampleCourse: Course = {
     id: uid(), title: "Volunteer Basics (sample)", type: "Volunteer Basics", program: "",
     description: "A tiny example course so you can see how the player works. Delete it any time.",
-    minMinutes: null, published: true, roles: [], assignedTo: [], createdAt: now, updatedAt: now,
+    estMinutes: 5, minMinutes: null, published: true, roles: [], assignedTo: [], createdAt: now, updatedAt: now,
     pages: [
       { id: uid(), title: "Welcome", blocks: [
         { id: uid(), type: "text", html: "<h2>Welcome to NextGen Coders</h2><p>NextGen Coders teaches coding to Middle Georgia students. As an instructor, you help make every class welcoming and safe.</p>" },
@@ -78,6 +78,7 @@ function migrate(db: any): any {
   for (const g of db.guides ?? []) { g.roles ??= []; g.assignedTo ??= [] }
   for (const c of db.courses ?? []) {
     c.minMinutes ??= null
+    c.estMinutes ??= null
     delete c.timeLimitMin // replaced by minimum time spent
     c.program ??= ""
     c.roles ??= []

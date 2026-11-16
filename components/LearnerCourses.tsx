@@ -4,10 +4,10 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { StatusPill } from "@/components/StatusPill"
 import { api } from "@/lib/client"
-import { courseStatus } from "@/lib/status"
+import { courseStatus, fmtEst } from "@/lib/status"
 import { CompletionSummary, Redo, programName } from "@/lib/types"
 
-type Summary = { id: string; title: string; type: string; program: string; description: string; minMinutes: number | null; pageCount: number; quizQuestions: number; required: boolean }
+type Summary = { id: string; title: string; type: string; program: string; description: string; estMinutes: number | null; minMinutes: number | null; pageCount: number; quizQuestions: number; required: boolean }
 
 export default function LearnerCourses() {
   const [courses, setCourses] = useState<Summary[] | null>(null)
@@ -38,6 +38,7 @@ export default function LearnerCourses() {
                 <StatusPill status={status} />
                 {c.required ? <span className="chip blue">Required</span> : <span className="chip">Optional</span>}
                 {c.program && <span className="chip purple">{programName(c.program)}</span>}
+                {c.estMinutes ? <span className="chip">⏱ About {fmtEst(c.estMinutes)}</span> : null}
                 {c.minMinutes ? <span className="chip">Min {c.minMinutes} min</span> : null}
               </div>
               {c.description && <p>{c.description}</p>}

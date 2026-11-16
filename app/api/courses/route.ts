@@ -12,7 +12,7 @@ export async function GET() {
   const summaries = (await readDB("courses")).courses
     .filter((c) => isVisibleTo(c, g.user))
     .map((c) => ({
-      id: c.id, title: c.title, type: c.type, program: c.program, description: c.description, minMinutes: c.minMinutes,
+      id: c.id, title: c.title, type: c.type, program: c.program, description: c.description, estMinutes: c.estMinutes, minMinutes: c.minMinutes,
       published: c.published, pageCount: c.pages.length, updatedAt: c.updatedAt,
       quizQuestions: c.pages.flatMap((p) => p.blocks).reduce((n, b) => n + (b.type === "quiz" ? b.questions.length : 0), 0),
       // Admins see who it's aimed at. Everyone else only learns whether it's required for them.
@@ -26,7 +26,7 @@ export async function POST() {
   if ("res" in g) return g.res
   const now = new Date().toISOString()
   const course: Course = {
-    id: uid(), title: "Untitled course", type: "", program: "", description: "", minMinutes: null, published: false,
+    id: uid(), title: "Untitled course", type: "", program: "", description: "", estMinutes: null, minMinutes: null, published: false,
     roles: [], assignedTo: [], pages: [{ id: uid(), title: "Page 1", blocks: [] }], createdAt: now, updatedAt: now,
   }
   const db = await readDB()

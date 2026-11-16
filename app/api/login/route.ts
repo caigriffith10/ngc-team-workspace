@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { COOKIE_NAME, REMEMBER_SECONDS, SESSION_SECONDS, createSession } from "@/lib/auth"
 import { passwordMatches } from "@/lib/crypto"
 import { readDB, writeDB } from "@/lib/db"
+import { usernameKey } from "@/lib/username"
 
 // Failed-login limits, kept in the database so they hold even when the site runs on several servers (Vercel).
 //   per network address: 10 failures / 10 minutes     per username: 10 failures / 15 minutes
@@ -13,7 +14,7 @@ const tooMany = () => NextResponse.json({ error: "Too many attempts. Wait a few 
 export async function POST(request: Request) {
   const ip = (request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown").slice(0, 64)
   const body = await request.json().catch(() => null)
-  const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : ""
+  const username = typeof body?.username === "string" ? usernameKey(body.username) : ""
   const password = typeof body?.password === "string" ? body.password.slice(0, 200) : ""
   const remember = body?.remember === true
   const now = Date.now()
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
   const live = (k: string) => { const e = db.throttle[k]; return e && e.resetAt > now ? e : null }
   if ((live(ipKey)?.count ?? 0) >= LIMITS.ip.max || (live(userKey)?.count ?? 0) >= LIMITS.user.max) return tooMany()
 
-  const account = db.accounts.find((a) => a.username === username)
+  const account = db.accounts.find((a) => usernameKey(a.username) === username)
   // Check a password even for unknown usernames so timing doesn't reveal which usernames exist.
   const ok = account ? passwordMatches(password, account.password) : passwordMatches(password, "x:y:z") && false
 

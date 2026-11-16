@@ -80,6 +80,12 @@ export function cleanBlock(b: any): Block | null {
   }
 }
 
+/** A whole number of minutes from 1 to 600, or null. */
+const cleanMinutes = (v: unknown): number | null => {
+  const n = Number(v)
+  return v !== null && v !== "" && Number.isFinite(n) && n > 0 ? Math.min(Math.round(n), 600) : null
+}
+
 /** Rebuilds a course from untrusted input, keeping only known fields and sane sizes. */
 export function sanitizeCourse(input: any, existing: Course, validRoles: string[]): Course {
   const pages: CoursePage[] = (Array.isArray(input?.pages) ? input.pages : []).slice(0, 50).map((p: any) => ({
@@ -96,6 +102,7 @@ export function sanitizeCourse(input: any, existing: Course, validRoles: string[
     type: str(input?.type, 100).trim(),
     program: isProgramId(input?.program) ? input.program : "",
     description: str(input?.description, 2000),
+    estMinutes: cleanMinutes(input?.estMinutes),
     minMinutes: Number.isFinite(t) && t > 0 ? Math.min(Math.round(t), 600) : null,
     published: input?.published === true,
     roles: [...new Set<string>(roles)] as Course["roles"],
@@ -106,7 +113,17 @@ export function sanitizeCourse(input: any, existing: Course, validRoles: string[
 }
 
 /** Validates a whole lesson pasted from Claude (see skills/ngc-lesson-builder). */
-export function parseLessonImport(raw: unknown): { title: string; description: string; pages: CoursePage[] } | { error: string } {
+export type LessonSettings = {
+  program?: Course["program"]
+  estMinutes?: number | null
+  minMinutes?: number | null
+  roles?: string[]
+  people?: string[] // full names; matched to accounts by the builder
+  published?: boolean
+}
+export type ParsedLesson = { title: string; description: string; pages: CoursePage[]; settings: LessonSettings }
+
+export function parseLessonImport(raw: unknown): ParsedLesson | { error: string } {
   const lesson: any = (raw as any)?.lesson ?? raw
   const list = Array.isArray(lesson?.pages) ? lesson.pages : null
   if (!list || list.length === 0) return { error: 'Expected {"lesson":{"title":"...","pages":[...]}} with at least one page.' }
@@ -121,7 +138,16 @@ export function parseLessonImport(raw: unknown): { title: string; description: s
       .filter(Boolean) as Block[],
   }))
   if (pages.every((p) => p.blocks.length === 0)) return { error: "None of the pages had usable content." }
-  return { title: str(lesson?.title, 200).trim(), description: str(lesson?.description, 2000).trim(), pages }
+  const s: any = lesson?.settings ?? {}
+  const settings: LessonSettings = {}
+  if (isProgramId(s.program)) settings.program = s.program
+  else if (s.program === "" || s.program === "all") settings.program = ""
+  if ("estMinutes" in s) settings.estMinutes = cleanMinutes(s.estMinutes)
+  if ("minMinutes" in s) settings.minMinutes = cleanMinutes(s.minMinutes)
+  if (Array.isArray(s.roles)) settings.roles = s.roles.filter((r: unknown) => typeof r === "string").slice(0, 30)
+  if (Array.isArray(s.people)) settings.people = s.people.filter((r: unknown) => typeof r === "string").slice(0, 200)
+  if (typeof s.published === "boolean") settings.published = s.published
+  return { title: str(lesson?.title, 200).trim(), description: str(lesson?.description, 2000).trim(), pages, settings }
 }
 
 /** A learner's uploaded file: same rules as documents. */

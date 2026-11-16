@@ -3,6 +3,7 @@ import { decryptPassword, encryptPassword } from "@/lib/crypto"
 import { readDB, writeDB } from "@/lib/db"
 import { fail, guard } from "@/lib/session"
 import { BUILT_IN_ROLES } from "@/lib/types"
+import { USERNAME_RULE, cleanUsername, isValidUsername, usernameKey } from "@/lib/username"
 
 type Ctx = { params: Promise<{ id: string }> }
 
@@ -22,9 +23,9 @@ export async function PATCH(request: Request, { params }: Ctx) {
     acct.email = e
   }
   if (typeof b.username === "string") {
-    const u = b.username.trim().toLowerCase()
-    if (!/^[a-z0-9._-]{3,30}$/.test(u)) return fail("Username: 3-30 characters, letters, numbers, . _ - only.")
-    if (db.accounts.some((a) => a.id !== id && a.username === u)) return fail("That username is already taken.")
+    const u = cleanUsername(b.username)
+    if (!isValidUsername(u)) return fail(USERNAME_RULE)
+    if (db.accounts.some((a) => a.id !== id && usernameKey(a.username) === usernameKey(u))) return fail("That username is already taken.")
     acct.username = u
   }
   if (b.role !== undefined) {

@@ -11,6 +11,7 @@ import { api, send } from "@/lib/client"
 import { fmtSize, readPickedFile } from "@/lib/clientFiles"
 import { htmlToText } from "@/lib/sanitize"
 import { useRoles } from "@/lib/useRoles"
+import type { ParsedLesson } from "@/lib/validate"
 import { Block, Course, CoursePage, FILE_ACCEPT, MAX_FILE_BYTES, PASS_PERCENT, PROGRAMS, Question, uid } from "@/lib/types"
 import { youtubeEmbedUrl } from "@/lib/video"
 
@@ -77,6 +78,8 @@ export default function CourseBuilder() {
   const router = useRouter()
   const [course, setCourse] = useState<Course | null>(null)
   const [people, setPeople] = useState<Person[]>([])
+  const { assignable } = useRoles()
+  const [importNote, setImportNote] = useState("")
   const [sel, setSel] = useState(0)
   const [selBlock, setSelBlock] = useState<string | null>(null)
   const [mode, setMode] = useState<"edit" | "preview">("edit")
@@ -174,13 +177,28 @@ export default function CourseBuilder() {
   async function openAsLearner() { if (await save()) router.push(`/dashboard/courses/${id}`) }
   function goBack(e: React.MouseEvent) { if (dirty && !confirm("You have unsaved changes. Leave without saving?")) e.preventDefault() }
 
-  function applyLesson(l: { title: string; description: string; pages: CoursePage[] }) {
+  function applyLesson(l: ParsedLesson) {
+    const blank = course!.pages.length === 1 && course!.pages[0].blocks.length === 0
+    const s = l.settings
     edit((c) => {
-      c.pages.splice(pi + 1, 0, ...l.pages)
+      if (blank) c.pages = l.pages // brand-new course: the import replaces the empty first page
+      else c.pages.splice(pi + 1, 0, ...l.pages)
       if (c.title === "Untitled course" && l.title) c.title = l.title
       if (!c.description && l.description) c.description = l.description
+      if (s.program !== undefined) c.program = s.program
+      if (s.estMinutes !== undefined) c.estMinutes = s.estMinutes
+      if (s.minMinutes !== undefined) c.minMinutes = s.minMinutes
+      if (s.roles) c.roles = [...new Set([...c.roles, ...s.roles.filter((r) => assignable.includes(r))])]
+      if (s.people) {
+        const ids = s.people.map((n) => people.find((p) => p.name.trim().toLowerCase() === n.trim().toLowerCase())?.id).filter(Boolean) as string[]
+        c.assignedTo = [...new Set([...c.assignedTo, ...ids])]
+      }
+      if (s.published !== undefined) c.published = s.published
     })
-    setSel(pi + 1); setSelBlock(null); setImportKind(null)
+    const missed = (s.people ?? []).filter((n) => !people.some((p) => p.name.trim().toLowerCase() === n.trim().toLowerCase()))
+    const badRoles = (s.roles ?? []).filter((r) => !assignable.includes(r))
+    setImportNote([missed.length ? `No account found for: ${missed.join(", ")}.` : "", badRoles.length ? `Unknown role(s): ${badRoles.join(", ")}.` : ""].filter(Boolean).join(" "))
+    setSel(blank ? 0 : pi + 1); setSelBlock(null); setImportKind(null)
   }
   function applyText(blockId: string, html: string) {
     edit((c) => { for (const p of c.pages) for (const b of p.blocks) if (b.id === blockId && b.type === "text") b.html = b.html + html })
@@ -211,6 +229,7 @@ export default function CourseBuilder() {
 
       <main className="dash-main wide">
         {error && <p className="form-error">{error}</p>}
+        {importNote && <p className="form-error">{importNote}</p>}
 
         <div className="bld">
           {/* ---------- Left: pages ---------- */}
@@ -349,6 +368,16 @@ export default function CourseBuilder() {
               </div>
               <div className="field"><label htmlFor="ctype">Course type</label><input id="ctype" className="input" placeholder="Volunteer Basics" value={course.type} onChange={(e) => edit((c) => { c.type = e.target.value })} /></div>
               <div className="field"><label htmlFor="cdesc">Description</label><textarea id="cdesc" className="input" rows={3} value={course.description} onChange={(e) => edit((c) => { c.description = e.target.value })} /></div>
+            </div>
+
+            <div className="side-sec">
+              <h3>Time to complete</h3>
+              <div className="field">
+                <label htmlFor="est">About how many minutes does this take?</label>
+                <input id="est" className="input" type="number" min={1} max={600} placeholder="e.g. 20" style={{ width: "8rem" }}
+                  value={course.estMinutes ?? ""} onChange={(e) => edit((c) => { const n = Math.round(Number(e.target.value)); c.estMinutes = e.target.value && n > 0 ? Math.min(n, 600) : null })} />
+              </div>
+              <p className="hint">Shown to learners so they can plan. It doesn&apos;t block anyone; use the minimum below for that.</p>
             </div>
 
             <div className="side-sec">

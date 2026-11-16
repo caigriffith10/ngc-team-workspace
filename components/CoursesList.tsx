@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import ImportModal from "@/components/ImportModal"
 import { PublishPill } from "@/components/StatusPill"
+import { fmtEst } from "@/lib/status"
+import { useRoles } from "@/lib/useRoles"
+import type { ParsedLesson } from "@/lib/validate"
 import { api, send } from "@/lib/client"
 import { Course, programName } from "@/lib/types"
 
 type Summary = {
-  id: string; title: string; type: string; program: string; minMinutes: number | null; published: boolean
+  id: string; title: string; type: string; program: string; estMinutes: number | null; minMinutes: number | null; published: boolean
   pageCount: number; quizQuestions: number; roles: string[]; assignedTo: string[]
 }
 
@@ -23,14 +26,27 @@ export default function CoursesList() {
   const load = () => api<Summary[]>("/api/courses").then(setCourses).catch((e) => setError(e.message))
   useEffect(() => { load() }, [])
 
-  async function create(lesson?: { title: string; description: string; pages: Course["pages"] }) {
+  const { assignable } = useRoles()
+
+  async function create(lesson?: ParsedLesson) {
     setCreating(true)
     setError("")
     try {
       const { id } = await api<{ id: string }>("/api/courses", send("POST"))
       if (lesson) {
         const fresh = await api<Course>(`/api/courses/${id}`)
-        await api(`/api/courses/${id}`, send("PUT", { ...fresh, title: lesson.title || fresh.title, description: lesson.description, pages: lesson.pages }))
+        const s = lesson.settings
+        const people = s.people?.length ? await api<{ id: string; name: string }[]>("/api/people").catch(() => []) : []
+        const ids = (s.people ?? []).map((n) => people.find((p) => p.name.trim().toLowerCase() === n.trim().toLowerCase())?.id).filter(Boolean) as string[]
+        await api(`/api/courses/${id}`, send("PUT", {
+          ...fresh, title: lesson.title || fresh.title, description: lesson.description, pages: lesson.pages,
+          ...(s.program !== undefined && { program: s.program }),
+          ...(s.estMinutes !== undefined && { estMinutes: s.estMinutes }),
+          ...(s.minMinutes !== undefined && { minMinutes: s.minMinutes }),
+          ...(s.published !== undefined && { published: s.published }),
+          roles: (s.roles ?? []).filter((r) => assignable.includes(r)),
+          assignedTo: ids,
+        }))
       }
       router.push(`/dashboard/courses/${id}/edit`)
     } catch (e) {
@@ -86,6 +102,7 @@ export default function CoursesList() {
               <p>
                 {c.pageCount} page{c.pageCount === 1 ? "" : "s"}
                 {c.quizQuestions ? <> · {c.quizQuestions} quiz question{c.quizQuestions === 1 ? "" : "s"}</> : null}
+                {c.estMinutes ? <> · about {fmtEst(c.estMinutes)}</> : null}
                 {c.minMinutes ? <> · min {c.minMinutes} min</> : null}
               </p>
             </div>

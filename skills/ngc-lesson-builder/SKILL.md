@@ -12,11 +12,30 @@ Build an instructor-training lesson from the user's material and output it as on
 - NextGen Coders teaches coding to Middle Georgia students. The only programs are **Python, JavaScript, CSP (Code.org) and Scratch (scratch.mit.edu)**. Never write examples in Java, C++ or any other language, and never suggest other platforms.
 - The readers are instructors, many of them high school students. Write in a clear, friendly, respectful tone. No slang, no talking down.
 
+## Step 0: Interview the admin (do this BEFORE writing anything)
+
+The goal is a straight import: when the admin pastes your JSON, the course must be fully set up (program, time, who takes it, published or not) with nothing left to configure by hand. So collect every setting up front.
+
+First read whatever the user already gave you (message, uploaded deck, notes) and fill in every answer you can from it. Never re-ask something they already told you. Then ask ONLY the remaining questions, all in ONE message, as a short numbered list with the suggested default in brackets so they can answer "all defaults" or just "3: Volunteers only". Do not write the lesson until they answer (if they say "just use defaults", use the defaults).
+
+Questions:
+1. **Program**: Python, JavaScript, CSP (Code.org), Scratch, or all programs? [all programs]
+2. **Time to complete**: about how many minutes will this lesson take a learner? Offer your own estimate from the content (about 1 minute per short page plus 1 minute per quiz question; round to 5) [your estimate]
+3. **Minimum time before they can submit**: should learners be blocked from submitting until they have spent a set number of minutes? [no minimum]
+4. **Who takes it**: which roles must complete it (In Training, Volunteer, Officer, Senior Lead, or any custom role the admin names), and are there specific people by full name? [open to everyone, optional]
+5. **Publish now or keep as a draft** so they can review it first? [draft]
+6. **Pages and quiz** (only if not clear from the source): how many pages, and how many quiz questions? [4 to 8 pages, 5 quiz questions]
+7. **Anything else**: topics to stress or leave out, videos to include (YouTube links only)? [none]
+
+Role names must match the workspace exactly. Built-in roles: In Training, Volunteer, Officer, Senior Lead. Admins do not take courses, so never list Admin. If they name a role you don't recognize, include it as given and tell them to check the spelling.
+
+After you have the answers, confirm nothing further and go to Step 1. Never put a person's name or role in the lesson text itself.
+
 ## Step 1: Get the source and the shape
 
 - Read everything the user gave you before writing. Do not skim.
-- If they did not say how many pages or whether they want a quiz, pick sensible defaults: 4 to 8 pages, and a short quiz (5 questions) on the last page. Ask only if the source is missing entirely.
-- Ask for the program (Python, JavaScript, CSP or Scratch) only if it is unclear and it changes the content.
+- Use the page count and quiz size from the interview (defaults: 4 to 8 pages, and a short quiz of 5 questions on the last page). Ask for the source only if it is missing entirely.
+- Use the program from the interview. It also decides what the content may mention.
 
 ### If the user uploaded a presentation
 
@@ -65,6 +84,14 @@ Output ONLY one JSON code block:
   "lesson": {
     "title": "Welcoming Every Student",
     "description": "How to make a Scratch class feel safe and friendly.",
+    "settings": {
+      "program": "scratch",
+      "estMinutes": 20,
+      "minMinutes": 10,
+      "roles": ["Volunteer", "In Training"],
+      "people": ["Jordan Smith"],
+      "published": false
+    },
     "pages": [
       {
         "title": "Goals",
@@ -93,6 +120,14 @@ Output ONLY one JSON code block:
 }
 ```
 
+The `settings` object holds the interview answers. Include every key, using these exact values:
+- `program`: `"python"`, `"javascript"`, `"csp"`, `"scratch"`, or `""` for all programs.
+- `estMinutes`: whole number of minutes the lesson takes (shown to learners), or `null`.
+- `minMinutes`: whole number of minutes before Submit unlocks, or `null` for no minimum.
+- `roles`: list of role names that must take it. Empty list `[]` plus empty `people` means open to everyone (optional).
+- `people`: list of full names exactly as they appear on their accounts, or `[]`.
+- `published`: `true` or `false`.
+
 JSON rules:
 - Straight double quotes only. No trailing commas. No comments.
 - Escape double quotes inside text with a backslash, and write the HTML on a single line per block (no raw line breaks inside strings; use `<p>` and `<br>` instead).
@@ -107,7 +142,8 @@ JSON rules:
 
 5. Never more than 30 pages or 60 blocks on a page, or the import is rejected.
 6. For a presentation: every slide's content is in the lesson (or listed as skipped), and image placeholders are marked.
+7. `settings` is present, matches what the admin told you in the interview, and uses only the allowed values.
 
 ## Output
 
-Reply with the single JSON code block first (the Workspace import box reads the JSON out of your reply, so keep it as one clean block). Then add one short line: "Copy the JSON and paste it into Instructor Courses > Create > Import lesson from Claude in the Team Workspace." For an uploaded presentation, follow that line with the short admin notes from the presentation steps (merged or skipped slides, unreadable slides, image placeholders). Keep any text outside the code block free of curly braces and square brackets.
+Reply with the single JSON code block first (the Workspace import box reads the JSON out of your reply, so keep it as one clean block). Then add one short line: "Copy the JSON and paste it into Instructor Courses > Create > Import lesson from Claude in the Team Workspace. Program, time, who takes it and publish status are already set, so there is nothing else to configure." Then one line recapping the settings you used, in plain words (for example: "Scratch, about 20 minutes, 10 minute minimum, required for Volunteers and In Training, saved as a draft"). For an uploaded presentation, follow that line with the short admin notes from the presentation steps (merged or skipped slides, unreadable slides, image placeholders). Keep any text outside the code block free of curly braces and square brackets.

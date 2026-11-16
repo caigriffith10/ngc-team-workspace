@@ -84,6 +84,7 @@ export type Course = {
   type: string
   program: ProgramId | "" // "" = all programs
   description: string
+  estMinutes: number | null // how long the course takes to finish (shown to learners; set by the admin)
   minMinutes: number | null // minimum time spent before a learner may submit
   published: boolean
   roles: Role[] // required for these roles

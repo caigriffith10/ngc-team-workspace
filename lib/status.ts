@@ -53,3 +53,9 @@ export const fmtMinutes = (sec: number) => {
   const s = sec % 60
   return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}:${String(s).padStart(2, "0")}`
 }
+
+/** "20 min", "1 hr", "1 hr 30 min": how long a course takes, for learners to read. */
+export const fmtEst = (min: number) => {
+  const h = Math.floor(min / 60), m = min % 60
+  return h === 0 ? `${m} min` : m === 0 ? `${h} hr` : `${h} hr ${m} min`
+}

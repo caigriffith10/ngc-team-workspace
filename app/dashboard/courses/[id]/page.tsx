@@ -5,7 +5,7 @@ import { useParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Answers, BlockView, LearnerState, Responses, Uploads, missingItems } from "@/components/CourseBlocks"
 import { api, send } from "@/lib/client"
-import { fmtMinutes } from "@/lib/status"
+import { fmtEst, fmtMinutes } from "@/lib/status"
 import { Course, PublicAccount } from "@/lib/types"
 
 type LearnCourse = Course & { startToken: string; required: boolean }
@@ -121,7 +121,7 @@ export default function CoursePlayer() {
           <div className="player-bar">
             <div>
               <strong>{course.title}</strong>
-              <div className="muted" style={{ fontSize: ".85rem" }}>Page {page + 1} of {course.pages.length}{course.required && " · Required"}</div>
+              <div className="muted" style={{ fontSize: ".85rem" }}>Page {page + 1} of {course.pages.length}{course.estMinutes ? ` · About ${fmtEst(course.estMinutes)}` : ""}{course.required && " · Required"}</div>
             </div>
             {minSec > 0 && (
               <span className={`timer${waitSec === 0 ? " done" : ""}`}>

@@ -3,10 +3,10 @@
 import { useModal } from "@/lib/useModal"
 import { useState } from "react"
 import { markdownToHtml } from "@/lib/sanitize"
-import { CoursePage, Question, ScheduleDay, uid } from "@/lib/types"
-import { parseLessonImport, parseQuizImport, parseScheduleImport } from "@/lib/validate"
+import { Question, ScheduleDay, uid } from "@/lib/types"
+import { ParsedLesson, parseLessonImport, parseQuizImport, parseScheduleImport } from "@/lib/validate"
 
-type Lesson = { title: string; description: string; pages: CoursePage[] }
+type Lesson = ParsedLesson
 
 /** Cuts the JSON out of whatever Claude replied with (it may add a sentence or a code fence). */
 function extractJson(text: string): unknown {
@@ -68,7 +68,7 @@ export default function ImportModal({ kind, onClose, onLesson, onQuestions, onTe
           <li>In Claude, open Settings, find <strong>Skills</strong>, and upload the zip you just downloaded. You only do this once.</li>
           <li>
             {kind === "lesson"
-              ? <>Upload your presentation (.pptx or PDF) or paste your notes into Claude and say: <em>“Use NextGen Lesson Builder to turn this into a lesson for Python.”</em></>
+              ? <>Upload your presentation (.pptx or PDF) or paste your notes into Claude and say: <em>“Use NextGen Lesson Builder to turn this into a lesson.”</em> Claude will ask a few questions (program, time, who takes it, publish or draft) so the course arrives fully set up.</>
               : kind === "schedule"
                 ? <>Paste your dates (a calendar, an email, a list) into Claude and say: <em>“Use NextGen Schedule Builder to make our fall schedule from this.”</em></>
                 : <>Paste your course text into Claude and say: <em>“Use NextGen Quiz Builder to make 10 questions from this.”</em></>}
