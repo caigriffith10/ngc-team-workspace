@@ -676,7 +676,8 @@ h1, h2, h3 { letter-spacing: -.01em; }
   /* Login: header floats on top so the card centers on the whole screen, not just the space below the header. */
   .page { min-height: 100vh; min-height: 100dvh; position: relative; }
   .page .site-header { position: absolute; top: 0; left: 0; right: 0; }
-  .main { padding: 4.5rem 1rem; }
+  /* Sits halfway between "centered below the header" and "centered on the whole screen". */
+  .main { padding: 6.9rem 1rem 2.1rem; }
 
   /* Easier to tap, and 16px text stops iPhones zooming in when a field is focused. */
   .input, .rt-select, .rt-area { font-size: 16px; }
