@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import DashboardNav from "@/components/DashboardNav"
+import ThemeSync from "@/components/ThemeSync"
 import { getUser } from "@/lib/session"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -8,6 +9,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="dash">
+      <ThemeSync theme={user.theme} />
       <DashboardNav role={user.role} />
       {children}
     </div>

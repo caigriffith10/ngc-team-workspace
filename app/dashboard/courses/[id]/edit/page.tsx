@@ -55,6 +55,14 @@ async function imageToDataUrl(file: File): Promise<string> {
   return url
 }
 
+/** A copy of a block with fresh ids (quiz questions too, or the copy's answers would mix with the original's). */
+function freshBlock(b: Block): Block {
+  const copy = structuredClone(b)
+  copy.id = uid()
+  if (copy.type === "quiz") for (const q of copy.questions) q.id = uid()
+  return copy
+}
+
 function move<T>(arr: T[], from: number, to: number) {
   if (from === to || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return
   const [x] = arr.splice(from, 1)
@@ -146,14 +154,14 @@ export default function CourseBuilder() {
   }
   const moveBlock = (from: number, to: number) => edit((c) => move(c.pages[pi].blocks, from, to))
   const dupBlock = (bi: number) => {
-    const copy = { ...structuredClone(page.blocks[bi]), id: uid() } as Block
+    const copy = freshBlock(page.blocks[bi])
     edit((c) => { c.pages[pi].blocks.splice(bi + 1, 0, copy) })
     setSelBlock(copy.id)
   }
   const removeBlock = (bi: number) => { edit((c) => { c.pages[pi].blocks.splice(bi, 1) }); setSelBlock(null) }
   const addPage = () => { edit((c) => { c.pages.push({ id: uid(), title: `Page ${c.pages.length + 1}`, blocks: [] }) }); setSel(course.pages.length); setSelBlock(null) }
   const dupPage = () => {
-    const copy: CoursePage = { ...structuredClone(page), id: uid(), title: `${page.title || "Page"} (copy)`, blocks: structuredClone(page.blocks).map((b) => ({ ...b, id: uid() }) as Block) }
+    const copy: CoursePage = { ...structuredClone(page), id: uid(), title: `${page.title || "Page"} (copy)`, blocks: page.blocks.map(freshBlock) }
     edit((c) => { c.pages.splice(pi + 1, 0, copy) }); setSel(pi + 1)
   }
   const removePage = () => {

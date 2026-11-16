@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light")
-    api<PublicAccount>("/api/me").then((m) => { setMe(m); setUsername(m.username); setDisplayName(m.name) }).catch(() => {})
+    api<PublicAccount>("/api/me").then((m) => { setMe(m); setUsername(m.username); setDisplayName(m.name); if (m.theme) setTheme(m.theme) }).catch(() => {})
   }, [])
 
   function chooseTheme(t: Theme) {
@@ -25,6 +25,8 @@ export default function SettingsPage() {
     if (t === "dark") document.documentElement.setAttribute("data-theme", "dark")
     else document.documentElement.removeAttribute("data-theme")
     try { localStorage.setItem("ngc.theme", t) } catch {}
+    // Save it on this person's account so it follows them to any device.
+    api("/api/me", send("PATCH", { theme: t })).catch(() => {})
   }
 
   async function saveName(e: React.FormEvent) {
@@ -68,7 +70,7 @@ export default function SettingsPage() {
           <button className={`theme-option${theme === "light" ? " on" : ""}`} onClick={() => chooseTheme("light")}> Light mode</button>
           <button className={`theme-option${theme === "dark" ? " on" : ""}`} onClick={() => chooseTheme("dark")}> Dark mode</button>
         </div>
-        <p className="muted" style={{ margin: 0, fontSize: ".85rem" }}>Saved on this device.</p>
+        <p className="muted" style={{ margin: 0, fontSize: ".85rem" }}>Saved to your account, so it follows you on any device.</p>
       </section>
 
       <section className="panel setting">

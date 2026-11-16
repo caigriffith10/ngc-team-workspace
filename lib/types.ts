@@ -52,6 +52,8 @@ export type Account = {
   email: string
   role: Role
   password: string // encrypted at rest, see lib/crypto.ts (admins can view it)
+  /** This person's saved light/dark choice. Missing = they haven't picked yet (the device decides). */
+  theme?: "light" | "dark"
   createdAt: string
 }
 

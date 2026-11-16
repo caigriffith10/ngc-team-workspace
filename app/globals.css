@@ -660,22 +660,27 @@ h1, h2, h3 { letter-spacing: -.01em; }
 
 /* ---------- Phones ---------- */
 @media (max-width: 640px) {
-  /* Header: logo and Settings/Sign out on the first row, the nav links in one swipeable row below. */
-  .site-header { gap: .5rem .75rem; padding: .6rem 1rem; }
-  .site-header .logo { order: 1; }
-  .site-header .nav-user { order: 2; margin-left: auto; gap: .5rem; }
-  .site-header .nav { order: 3; flex: 0 0 100%; margin: 0 -1rem; padding: 0 1rem .1rem; flex-wrap: nowrap; overflow-x: auto; gap: .25rem; scrollbar-width: none; }
+  /* Header: compact logo + Settings/Sign out on the first row, a tidy tab strip for the nav links below. */
+  .site-header { gap: .35rem .75rem; padding: .5rem 1rem 0; }
+  .site-header .logo { order: 1; gap: .5rem; }
+  .site-header .logo img, .site-header .logo-badge { width: 34px; height: 34px; }
+  .site-header .logo-text { font-size: 12.5px; letter-spacing: .1em; }
+  .site-header .nav-user { order: 2; margin-left: auto; gap: .4rem; }
+  .site-header .nav { order: 3; flex: 0 0 100%; margin: 0 -1rem; padding: 0 1rem; border-top: 1px solid var(--border); flex-wrap: nowrap; overflow-x: auto; gap: .1rem; scrollbar-width: none; }
   .site-header .nav::-webkit-scrollbar { display: none; }
-  .nav-link { white-space: nowrap; padding: .55rem .8rem; }
-  .nav-gear, .nav-signout { height: 2.5rem; }
-  .nav-gear { width: 2.5rem; }
+  .nav-link { white-space: nowrap; padding: .65rem .7rem; font-size: .85rem; border-radius: 0; background: none; border-bottom: 2px solid transparent; }
+  .nav-link:hover { background: none; }
+  .nav-link.active { background: none; color: var(--text); border-bottom-color: var(--nav-active-bg); }
+  .nav-gear, .nav-signout { height: 2.2rem; }
+  .nav-gear { width: 2.2rem; }
+  .nav-signout { padding: 0 .75rem; font-size: .82rem; }
 
   .dash-main { padding: 1.25rem 1rem 3rem; }
   .bld-bar { padding: .6rem 1rem; }
   .card-head, .card-body { padding-left: 1.25rem; padding-right: 1.25rem; }
   /* Login: header floats on top so the card centers on the whole screen, not just the space below the header. */
   .page { min-height: 100vh; min-height: 100dvh; position: relative; }
-  .page .site-header { position: absolute; top: 0; left: 0; right: 0; }
+  .page .site-header { position: absolute; top: 0; left: 0; right: 0; padding: .75rem 1rem; }
   /* Sits halfway between "centered below the header" and "centered on the whole screen". */
   .main { padding: 6.9rem 1rem 2.1rem; }
 

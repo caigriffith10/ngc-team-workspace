@@ -22,6 +22,7 @@ export async function PATCH(request: Request) {
     if (!n) return fail("Enter a name.")
     me.name = n
   }
+  if (body.theme === "light" || body.theme === "dark") me.theme = body.theme
   if (typeof body.username === "string") {
     const u = body.username.trim().toLowerCase()
     if (!/^[a-z0-9._-]{3,30}$/.test(u)) return fail("Username: 3-30 characters, letters, numbers, . _ - only.")

@@ -62,7 +62,7 @@ export default function DashboardHome() {
     { href: "/dashboard/program-guides", title: "Program Guides", text: "Python, JavaScript, CSP, Scratch" },
     { href: "/dashboard/schedule", title: "Schedule", text: isAdmin ? "Build the class schedule" : "Every class day" },
     ...(isAdmin ? [{ href: "/dashboard/accounts", title: "Accounts", text: "Logins and roles" }, { href: "/dashboard/roles", title: "Roles", text: "Make roles and set what they can do" }, { href: "/dashboard/class-email", title: "Send Class Email", text: "One message to everyone" }] : []),
-    ...(me.permissions.includes("viewAttendance") ? [{ href: "https://www.google.com", title: "Instructor Attendance", text: "View all instructor attendances", external: true }] : []),
+    ...(me.permissions.includes("viewAttendance") ? [{ href: "/dashboard/attendance", title: "Instructor Attendance", text: "View all instructor attendances" }] : []),
     ...(!isAdmin ? [{ href: ABSENT_FORM_URL, title: "Mark Absent", text: "Can't make a class? Tell us here", external: true }] : []),
     { href: SIGN_IN_URL, title: STUDENT_LINK_LABEL, text: "For parents to sign students in", external: true },
     { href: "/dashboard/settings", title: "Settings", text: "Your name, password and look" },

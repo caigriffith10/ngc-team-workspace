@@ -11,7 +11,8 @@ export const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, 
  * and again in the browser before showing, so pasted or imported text can't run code.
  */
 export function sanitizeHtml(input: string, max = 60000): string {
-  const src = String(input ?? "").slice(0, max)
+  // Drop whole <style>/<script> blocks first, so pasted Word/web content doesn't leave its CSS showing as text.
+  const src = String(input ?? "").slice(0, max).replace(/<(script|style|head|title)\b[\s\S]*?<\/\1\s*>/gi, "")
   const re = /<!--[\s\S]*?-->|<(\/?)([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>/g
   let out = ""
   let last = 0
